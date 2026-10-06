@@ -227,69 +227,74 @@
 
   </div>
 </section>
-<section class="page" id="page-after"><div class="wrap"><div class="page-heading"><div class="eyebrow">A little proof you showed up</div><h1>Certificate studio.</h1><p class="desc">Create a certificate for an event listed here.</p></div><div class="certificate-layout"><div class="panel"><h2>Personalise it</h2><p>Choose an eligible event and enter the name that should appear on the certificate.</p><div class="field"><label for="certName">Participant name</label><input id="certName" placeholder="Your full name" maxlength="70"></div><div class="field"><label for="certEvent">Event</label><select id="certEvent"></select></div><button class="btn btn-orange" id="downloadCert">Download certificate PNG ↗</button><p class="demo-note">The file is rendered in your browser. No certificate record is submitted or verified by the college.</p></div><div class="certificate" id="certificatePreview"><div class="cert-brand">CampusMemory / CSMU</div><h2>Certificate of Participation</h2><div class="cert-small">Certificate of participation for</div><div class="cert-name" id="certPreviewName">Your Name</div><div class="cert-small" style="margin-top:17px">for taking part in</div><div class="cert-event" id="certPreviewEvent">Campus Event</div><div class="cert-small" id="certPreviewDate">Event date · Venue</div><div class="cert-small" style="margin-top:30px"></div></div></div></div></section>
+<section class="page" id="page-after"><div class="wrap"><div class="page-heading"><div class="eyebrow">A little proof you showed up</div><h1>Certificate studio.</h1><p class="desc">Create a certificate for an event listed here.</p></div><div class="certificate-layout">
 
-<section class="page" id="page-rooms"><div class="wrap"><div class="page-heading"><div class="eyebrow">A quiet corner on campus</div><h1>Free rooms & spaces.</h1><p class="desc">Find available classrooms and spaces across campus.</p></div><div class="toolbar"><div class="search-wrap"><span>⌕</span><input id="roomSearch" type="search" placeholder="Search rooms, facilities or buildings…"></div><select id="roomStatus"><option value="all">All availability</option><option value="available">Available</option><option value="busy">In use</option></select></div><div class="rooms-grid" id="roomsGrid"></div></div></section>
+  <div class="panel">
+    <h2>Personalise it</h2>
+    <p>Choose an eligible event for your certificate.</p>
 
-<section class="page" id="page-login"><div class="wrap"><div class="page-heading"><div class="eyebrow">Student access</div><h1>Welcome back.</h1><p class="desc">Sign in with your CampusMemory account.</p></div><div style="max-width:480px;padding-bottom:70px"><form class="panel" id="loginForm"><div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" required placeholder="student@csmu.ac.in" autocomplete="email"></div><div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" required placeholder="Your account password" autocomplete="current-password"></div><button class="btn btn-dark" type="submit" style="width:100%">Continue ↗</button><div class="demo-note">Secure sign-in powered by Supabase. Admin access is checked against the CampusMemory database.</div></form></div></div></section>
-
-<section class="page" id="page-admin">
-  <div class="wrap">
-    <div class="page-heading"><div class="eyebrow">Administrator workspace</div><h1>Manage campus notices.</h1><p class="desc">Create, update and remove the notices students see across CampusMemory. Changes are saved directly to Supabase.</p></div>
-    <div class="admin-stats">
-      <div class="admin-stat"><strong id="adminTotal">0</strong><span>Total notices</span></div>
-      <div class="admin-stat"><strong id="adminUpcoming">0</strong><span>Upcoming notices</span></div>
-      <div class="admin-stat"><strong id="adminCategories">0</strong><span>Categories</span></div>
+    <div class="field">
+      <label>Participant</label>
+      <input
+        id="certName"
+        placeholder="Loading student profile..."
+        maxlength="70"
+        readonly
+      >
     </div>
-    <div class="admin-layout">
-      <form class="panel" id="noticeForm">
-        <h2 id="noticeFormTitle">Add a notice</h2><p>Enter the information from the official campus source.</p>
-        <input type="hidden" id="noticeId">
-        <div class="field"><label for="noticeTitle">Title *</label><input id="noticeTitle" required maxlength="180" placeholder="Event or notice title"></div>
-        <div class="field"><label for="noticeCategory">Category</label><input id="noticeCategory" maxlength="60" value="General" placeholder="Workshop, Hackathon, Fest"></div>
-        <div class="field"><label for="noticeDescription">Description</label><textarea id="noticeDescription" maxlength="3000" placeholder="Important details for students"></textarea></div>
-        <div class="field"><label for="noticeDate">Event date & time</label><input id="noticeDate" type="datetime-local"></div>
-        <div class="field"><label for="noticeDeadline">Registration deadline</label><input id="noticeDeadline" type="datetime-local"></div>
-        <div class="field"><label for="noticeVenue">Venue</label><input id="noticeVenue" maxlength="180" placeholder="Building / room / online"></div>
-        <div class="field"><label for="noticeLink">Registration URL</label><input id="noticeLink" type="url" placeholder="https://..."></div>
-        <div class="field"><label for="noticeSource">Source name</label><input id="noticeSource" maxlength="180" placeholder="Official notice / department"></div>
-        <div class="poster-upload-section">
-  <label class="field-label">POSTER IMAGE</label>
 
-  <label for="noticePoster" class="poster-upload-box" id="posterUploadBox">
-    <span class="poster-upload-icon">↑</span>
-    <strong>Click to upload a poster</strong>
-    <span>or choose an image from your device</span>
-    <small>JPG, PNG or WebP · Maximum 5 MB</small>
-  </label>
-
-  <input
-    type="file"
-    id="noticePoster"
-    accept="image/jpeg,image/png,image/webp"
-    hidden
-  />
-
-  <div id="posterPreviewContainer" class="poster-preview" hidden>
-    <img
-      id="posterPreview"
-      alt="Notice poster preview"
-    />
-    <div class="poster-preview-info">
-      <strong>Poster selected</strong>
-      <button type="button" id="removePosterBtn">Remove image</button>
+    <div class="field">
+      <label>Enrollment ID</label>
+      <input
+        id="certEnrollment"
+        placeholder="Loading enrollment ID..."
+        readonly
+      >
     </div>
+
+    <div class="field">
+      <label for="certEvent">Event</label>
+      <select id="certEvent"></select>
+    </div>
+
+    <button class="btn btn-orange" id="downloadCert">
+      Download certificate PNG ↗
+    </button>
+
+    <p class="demo-note">
+      The certificate is generated using your verified student profile.
+    </p>
   </div>
+
+  <div class="certificate" id="certificatePreview">
+    <div class="cert-brand">CampusMemory / CSMU</div>
+
+    <h2>Certificate of Participation</h2>
+
+    <div class="cert-small">
+      Certificate of participation for
+    </div>
+
+    <div class="cert-name" id="certPreviewName">
+      Your Name
+    </div>
+
+    <div class="cert-small" style="margin-top:17px">
+      for taking part in
+    </div>
+
+    <div class="cert-event" id="certPreviewEvent">
+      Campus Event
+    </div>
+
+    <div class="cert-small" id="certPreviewDate">
+      Event date · Venue
+    </div>
+
+    <div class="cert-small" style="margin-top:30px"></div>
+  </div>
+
 </div>
-      
-        <div class="admin-actions"><button class="btn btn-dark" type="submit" id="saveNoticeBtn">Save notice ↗</button><button class="btn" type="button" id="cancelNoticeEdit" hidden>Cancel edit</button></div>
-        <p class="demo-note">Only verified administrators can save changes. Supabase RLS remains the security boundary.</p>
-      </form>
-      <div class="panel"><div class="section-top"><div><h2>Existing notices</h2><p>Choose a notice to edit or delete.</p></div><button class="btn btn-small" type="button" id="refreshAdminNotices">Refresh</button></div><div class="admin-list" id="adminNoticeList"><p>Loading notices…</p></div></div>
-    </div>
-  </div>
-</section>
-
 </main>
 
 <footer class="footer"><div class="wrap"><span>© 2026 CampusMemory</span><span>Find the notice. Check the source. Get on with it.</span></div></footer>

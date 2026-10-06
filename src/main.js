@@ -487,17 +487,54 @@ $("#replyInput").addEventListener("input", e => {
 
 function renderRooms(){const q=($("#roomSearch")?.value||"").toLowerCase(),s=$("#roomStatus")?.value||"all";const list=rooms.filter(r=>(s==="all"||r.status===s)&&[r.name,r.building,r.facilities].join(" ").toLowerCase().includes(q));$("#roomsGrid").innerHTML=list.map(r=>`<article class="room-card"><span class="room-num">${r.n}</span><h3>${esc(r.name)}</h3><p>${esc(r.building)}<br>${esc(r.facilities)}</p><span class="room-status ${r.status==="busy"?"busy":""}">${r.status==="busy"?"In use / check first":"Listed as available"}</span><p class="mono" style="font-size:9px">${esc(r.hours)}</p><button class="btn btn-small" data-room="${esc(r.name)}">Ask about space ↗</button></article>`).join("")||`<div class="empty">No spaces match those filters.</div>`;$("#roomsGrid").querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>{openChat();$("#chatInput").value="What should I know about "+b.dataset.room+"?";$("#chatInput").focus()})}
 
-$("#roomSearch").addEventListener("input",renderRooms);$("#roomStatus").addEventListener("change",renderRooms);
+$("#roomSearch")?.addEventListener("input", renderRooms);
+$("#roomStatus")?.addEventListener("change", renderRooms);
 
 function renderCertEvents(){const sel=$("#certEvent"),old=sel.value;sel.innerHTML=notices.map(e=>`<option value="${esc(e.id)}">${esc(e.title)}</option>`).join("");if(notices.some(e=>e.id===old))sel.value=old;updateCert()}
 
 function updateCert(){const e=notices.find(e=>e.id===$("#certEvent").value)||notices[0];$("#certPreviewName").textContent=$("#certName").value.trim()||"Your Name";$("#certPreviewEvent").textContent=e?.title||"Campus Event";$("#certPreviewDate").textContent=e?`${e.date} · ${e.venue}`:"Event date · Venue"}
 
-$("#certName").addEventListener("input",updateCert);$("#certEvent").addEventListener("change",updateCert);
+$("#certName")?.addEventListener("input", updateCert);
+$("#certEvent")?.addEventListener("change", updateCert);
 
 function downloadCertificate(){const name=$("#certName").value.trim()||"Your Name",e=notices.find(e=>e.id===$("#certEvent").value)||notices[0];const canvas=document.createElement("canvas");canvas.width=1600;canvas.height=1130;const c=canvas.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,1600,1130);c.strokeStyle="#171717";c.lineWidth=8;c.strokeRect(40,40,1520,1050);c.strokeStyle="#ea580c";c.lineWidth=2;c.strokeRect(65,65,1470,1000);c.textAlign="center";function txt(t,y,size,color,font="Inter"){c.fillStyle=color;c.font=`${size}px ${font}`;c.fillText(t,800,y,1370)}txt("CAMPUSMEMORY / CSMU",180,30,"#ea580c");txt("Certificate of Participation",350,65,"#171717","Georgia");txt("This certificate is a demo preview for",435,27,"#666","Inter");txt(name,555,64,"#171717","Georgia");c.strokeStyle="#aaa";c.lineWidth=1;c.beginPath();c.moveTo(370,585);c.lineTo(1230,585);c.stroke();txt("for taking part in",665,26,"#666");txt(e.title,755,37,"#171717");txt(`${e.date} · ${e.venue}`,820,23,"#666");txt("DEMO PREVIEW · NOT AN OFFICIAL DOCUMENT",990,19,"#888");const a=document.createElement("a");a.download="campusmemory-certificate.png";a.href=canvas.toDataURL("image/png");a.click();toast("Certificate preview downloaded.")}
 
 $("#downloadCert").onclick=downloadCertificate;
+async function loadStudentProfile(user) {
+  if (!user || !supabase) return;
+
+  try {
+    const { data, error } = await supabase
+      .from("students")
+      .select("full_name, enrollment_id, department, year")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    const nameInput = $("#certName");
+    const enrollmentInput = $("#certEnrollment");
+
+    if (data) {
+      if (nameInput) {
+        nameInput.value = data.full_name || "";
+      }
+
+      if (enrollmentInput) {
+        enrollmentInput.value = data.enrollment_id || "";
+      }
+
+      updateCert();
+    } else {
+      if (nameInput) nameInput.value = "";
+      if (enrollmentInput) enrollmentInput.value = "";
+      toast("Student profile could not be found.");
+    }
+  } catch (error) {
+    console.error("Student profile load failed:", error);
+    toast("Could not load your student profile.");
+  }
+}
 
 async function refreshAuthUser(user) {
   currentUser = user || null;
@@ -506,6 +543,7 @@ async function refreshAuthUser(user) {
 if (currentUser) {
   try {
     isAdmin = await verifyAdmin(currentUser);
+    await loadStudentProfile(currentUser);
   } catch (error) {
     console.error("Admin role check failed:", error);
     toast("Signed in, but admin access could not be verified.");
@@ -618,7 +656,7 @@ function openChat(){$("#chatPanel").classList.add("open");$("#chatInput").focus(
 
 $("#chatLaunch").onclick=openChat;$("#askNav").onclick=openChat;$("#heroAsk").onclick=openChat;$("#closeChat").onclick=closeChat;
 
-function answerQuestion(q){const low=q.toLowerCase(),found=notices.filter(e=>[e.title,e.category,e.date,e.time,e.venue,e.description].join(" ").toLowerCase().split(/[^\w]+/).some(w=>w.length>3&&low.includes(w)));if(/hackathon|aws|builders breakout/.test(low)){const e=notices.find(e=>e.category==="Hackathon");return e?`${e.title}\nWhen: ${e.date}, ${e.time}\nWhere: ${e.venue}\nDetails: ${e.description}\nRegistration: ${e.link}\n\nSource: ${e.sourceFile}`:"I couldn't find this information in the uploaded campus notices."}if(/register|registration|sign up|form/.test(low)){const e=found[0]||notices.find(e=>e.category==="Hackathon");return e?`Registration details for ${e.title}:\n${e.link}\n\nSource: ${e.sourceFile}`:"I couldn't find this information in the uploaded campus notices."}if(/workshop|multi.agent|mipt|international relations/.test(low)){const e=notices.find(e=>e.category==="Workshop");return `${e.title}\nWhen: ${e.date}, ${e.time}\nWhere: ${e.venue}\n${e.description}\nRegistration: ${e.link}\n\nSource: ${e.sourceFile}`}if(/freshers|aarambh|fest/.test(low)){const e=notices.find(e=>e.category==="Fest");return `${e.title}\nDate: ${e.date}\nVenue: ${e.venue}\n${e.description}\nLink: ${e.link}\n\nSource: ${e.sourceFile}`}if(/deadline|due date/.test(low)){const es=notices.filter(e=>e.deadline);return es.length?es.map(e=>`${e.title}: ${e.deadline}\nSource: ${e.sourceFile}`).join("\n\n"):"I couldn't find a specific registration deadline in the uploaded campus notices."}if(/event|notice|happening|upcoming|list/.test(low)){return "Here are the notices currently in this demo:\n\n"+notices.map(e=>`• ${e.title} — ${e.date}\nSource: ${e.sourceFile}`).join("\n\n")}if(found.length){return found.map(e=>`${e.title}\n${e.date} · ${e.venue}\n${e.description}\nSource: ${e.sourceFile}`).join("\n\n")}return "I couldn't find this information in the uploaded campus notices. Here are the notices currently available. Try asking about the AWS hackathon, Aarambh 6.0, or the multi-agent systems workshop."}
+function answerQuestion(q){const low=q.toLowerCase(),found=notices.filter(e=>[e.title,e.category,e.date,e.time,e.venue,e.description].join(" ").toLowerCase().split(/[^\w]+/).some(w=>w.length>3&&low.includes(w)));if(/hackathon|aws|builders breakout/.test(low)){const e=notices.find(e=>e.category==="Hackathon");return e?`${e.title}\nWhen: ${e.date}, ${e.time}\nWhere: ${e.venue}\nDetails: ${e.description}\nRegistration: ${e.link}\n\nSource: ${e.sourceFile}`:"I couldn't find this information in the uploaded campus notices."}if(/register|registration|sign up|form/.test(low)){const e=found[0]||notices.find(e=>e.category==="Hackathon");return e?`Registration details for ${e.title}:\n${e.link}\n\nSource: ${e.sourceFile}`:"I couldn't find this information in the uploaded campus notices."}if(/workshop|multi.agent|mipt|international relations/.test(low)){const e=notices.find(e=>e.category==="Workshop");return `${e.title}\nWhen: ${e.date}, ${e.time}\nWhere: ${e.venue}\n${e.description}\nRegistration: ${e.link}\n\nSource: ${e.sourceFile}`}if(/freshers|aarambh|fest/.test(low)){const e=notices.find(e=>e.category==="Fest");return `${e.title}\nDate: ${e.date}\nVenue: ${e.venue}\n${e.description}\nLink: ${e.link}\n\nSource: ${e.sourceFile}`}if(/deadline|due date/.test(low)){const es=notices.filter(e=>e.deadline);return es.length?es.map(e=>`${e.title}: ${e.deadline}\nSource: ${e.sourceFile}`).join("\n\n"):"I couldn't find a specific registration deadline in the uploaded campus notices."}if(/event|notice|happening|upcoming|list/.test(low)){return "Here are the notices currently in this demo:\n\n"+notices.map(e=>`• ${e.title} — ${e.date}\nSource: ${e.sourceFile}`).join("\n\n")}if(found.length){return found.map(e=>`${e.title}\n${e.date} · ${e.venue}\n${e.description}\nSource: ${e.sourceFile}`).join("\n\n")}return "I couldn't find this information in the uploaded campus notices. Here are the notices currently available.   Try asking about the AWS hackathon, Aarambh 6.0, or the multi-agent systems workshop."}
 
 function addBubble(text,who){const d=document.createElement("div");d.className="bubble"+(who==="user"?" user":"");d.textContent=text;$("#chatMessages").appendChild(d);$("#chatMessages").scrollTop=$("#chatMessages").scrollHeight}
 
